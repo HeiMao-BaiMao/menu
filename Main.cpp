@@ -165,12 +165,27 @@ static void CreateShortCutKeyCodeTable() {
 
 
 //---------------------------------------------------------------------------
+
+#define EXPORT(hr) extern "C" __declspec(dllexport) hr __stdcall
+
+#ifdef _MSC_VER
+# if defined(_M_AMD64) || defined(_M_X64)
+#  pragma comment(linker, "/EXPORT:V2Link")
+#  pragma comment(linker, "/EXPORT:V2Unlink")
+# else
+#pragma comment(linker, "/EXPORT:V2Link=_V2Link@4")
+#pragma comment(linker, "/EXPORT:V2Unlink=_V2Unlink@0")
+#endif
+#endif
+
+extern "C"
 int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason, void* lpReserved) {
 	return 1;
 }
 //---------------------------------------------------------------------------
 static tjs_int GlobalRefCountAtInit = 0;
-extern "C" __declspec(dllexport) HRESULT _stdcall V2Link(iTVPFunctionExporter *exporter)
+
+EXPORT(HRESULT) V2Link(iTVPFunctionExporter *exporter)
 {
 	LoadMessageFromResource();
 
@@ -225,7 +240,8 @@ extern "C" __declspec(dllexport) HRESULT _stdcall V2Link(iTVPFunctionExporter *e
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-extern "C" __declspec(dllexport) HRESULT _stdcall V2Unlink()
+
+EXPORT(HRESULT) V2Unlink()
 {
 	// 吉里吉里側から、プラグインを解放しようとするときに呼ばれる関数。
 
